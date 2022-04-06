@@ -1,5 +1,11 @@
+{% if populate %}
 add_library({{library}}
             {{filename}}.cpp)
+{% else %}
+add_library({{library}}
+            # add source files here
+            )
+{% endif %}
 
 
 target_include_directories({{library}} PUBLIC

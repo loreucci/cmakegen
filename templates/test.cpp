@@ -2,8 +2,8 @@
 
 #include <gtest/gtest.h>
 
-TEST(Test{{filename | capitalize}}, {{function}}) {
+TEST(Test{{filename | capitalize}}, {{filename}}_function) {
 
-    EXPECT_EQ({% if namespace is not none %}{{namespace}}::{% endif %}{{function}}(2, 5), 7);
+    EXPECT_EQ({% if namespace is not none %}{{namespace}}::{% endif %}{{filename}}_function(2, 5), 7);
 
 }

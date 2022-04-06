@@ -25,5 +25,10 @@ function(add_new_test target)
         PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 endfunction()
 
+{% if populate %}
 # list of tests
 add_new_test(test_{{filename}} {{filename}}.test.cpp)
+{% else %}
+# add tests with
+# add_new_test(test_name name.test.cpp)
+{% endif %}

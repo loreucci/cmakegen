@@ -6,7 +6,7 @@
 namespace {{namespace}} {
 
 {% endif %}
-int {{function}}(int a, int b);
+int {{filename}}_function(int a, int b);
 {% if namespace is not none %}
 
 }  // namespace {{namespace}}
