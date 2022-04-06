@@ -1,0 +1,86 @@
+cmake_minimum_required(VERSION 3.11)
+
+project({{project}} VERSION {{version}} LANGUAGES CXX)
+
+{% if cppver is not none %}
+# C++ version
+set(CMAKE_CXX_STANDARD {{cppver}})
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+{% endif %}
+{% if defaultrelease %}
+# default to Release
+set(default_build_type "Release")
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  message(STATUS "Setting build type to '${default_build_type}' as none was specified.")
+  set(CMAKE_BUILD_TYPE "${default_build_type}" CACHE
+      STRING "Choose the type of build." FORCE)
+  # Set the possible values of build type for cmake-gui
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
+    "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
+
+{% endif %}
+{% if defaultshared %}
+# default to shared library
+option(BUILD_SHARED_LIBS "Build shared lib" ON)
+
+{% endif %}
+# installation directories
+set(INSTALL_LIB_DIR lib CACHE PATH "Installation directory for libraries")
+set(INSTALL_INCLUDE_DIR include CACHE PATH "Installation directory for header files")
+if(WIN32 AND NOT CYGWIN)
+  set(DEF_INSTALL_CMAKE_DIR CMake)
+else()
+  set(DEF_INSTALL_CMAKE_DIR lib/cmake/{{library}})
+endif()
+set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH "Installation directory for CMake files")
+
+# make relative paths absolute (needed later on)
+foreach(p LIB BIN INCLUDE CMAKE)
+  set(var INSTALL_${p}_DIR)
+  if(NOT IS_ABSOLUTE "${${var}}")
+    set(${var} "${CMAKE_INSTALL_PREFIX}/${${var}}")
+  endif()
+endforeach()
+
+{% if tests %}
+include(FetchContent)
+set(FETCHCONTENT_QUIET OFF)
+
+{% endif %}
+# main library
+add_subdirectory(src)
+
+
+# installing
+
+# create the Config.cmake file
+file(RELATIVE_PATH REL_INCLUDE_DIR "${INSTALL_CMAKE_DIR}"
+   "${INSTALL_INCLUDE_DIR}")
+set(CONF_INCLUDE_DIRS "\${% raw %}{{% endraw %}{{library|upper()}}_CMAKE_DIR}/${REL_INCLUDE_DIR}")
+configure_file(cmake/{{library}}Config.cmake.in "${PROJECT_BINARY_DIR}/cmake/{{library}}Config.cmake" @ONLY)
+
+# create {{library}}ConfigVersion.cmake file
+configure_file(cmake/{{library}}ConfigVersion.cmake.in "${PROJECT_BINARY_DIR}/cmake/{{library}}ConfigVersion.cmake" @ONLY)
+
+# install both
+install(FILES
+  "${PROJECT_BINARY_DIR}/cmake/{{library}}Config.cmake"
+  "${PROJECT_BINARY_DIR}/cmake/{{library}}ConfigVersion.cmake"
+  DESTINATION "${INSTALL_CMAKE_DIR}")
+
+# install also export (that are included by Config.cmake)
+install(EXPORT {{library}}Targets
+        FILE {{library}}Targets.cmake
+        DESTINATION lib/cmake/{{library}})
+{% if tests %}
+
+# tests
+option(BUILD_TEST "Build tests" OFF)
+if (BUILD_TEST)
+    enable_testing()
+    add_subdirectory(tests)
+endif (BUILD_TEST)
+{% endif %}

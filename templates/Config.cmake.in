@@ -1,0 +1,16 @@
+# Config file for the {{library}} package
+# It defines the following variables
+#  {{library|upper()}}_INCLUDE_DIRS - include directories for {{library}}
+#  {{library|upper()}}_LIBRARIES    - libraries to link against
+
+# Compute paths
+get_filename_component({{library|upper()}}_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set({{library|upper()}}_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT TARGET {{library}} AND NOT {{library}}_BINARY_DIR)
+  include("${% raw %}{{% endraw %}{{library|upper()}}_CMAKE_DIR}/{{library}}Targets.cmake")
+endif()
+
+# These are IMPORTED targets created by {{library}}Targets.cmake
+set({{library|upper()}}_LIBRARIES {{library}})
